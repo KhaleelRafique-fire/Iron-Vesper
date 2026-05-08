@@ -1,0 +1,27 @@
+{
+  "name": "Iron Vesper",
+  "short_name": "Iron Vesper",
+  "description": "A self-contained medieval pixel metroidvania built for the browser.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "background_color": "#0d1014",
+  "theme_color": "#0d1014",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "cover.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}

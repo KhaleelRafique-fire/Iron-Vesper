@@ -1,0 +1,17 @@
+IRON VESPER
+
+How to play:
+1. Unzip the folder.
+2. Open index.html in Chrome, Edge, Firefox, or Safari.
+3. Click New Game.
+
+No install is needed. Your save stays in the browser on this computer.
+
+Core controls:
+Move: A / D or arrow keys
+Jump: Space or Up
+Attack: J
+Interact: F
+Inventory: V
+Pause: P or Esc
+Mute: O
