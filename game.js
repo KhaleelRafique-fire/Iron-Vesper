@@ -20,6 +20,8 @@ const GROUND_ROW = ROWS - 2;
 const FLOOR_Y = FLOOR_ROW * TILE;
 const GRAV = 0.36;
 const ATTACK_MAX = 18;
+const BASIC_ATTACK_COOLDOWN = Math.ceil(0.05 * 60);
+const BASIC_ATTACK_RESTART_WINDOW = Math.max(0, 4 - BASIC_ATTACK_COOLDOWN);
 const SHIELD_MAX = 10;
 const BASH_MAX = 14;
 const DASH_MAX = 20;
@@ -3310,7 +3312,7 @@ function playerInput(room) {
     }
     addParticles(player.x + 6, player.y + 8, "#f3cc67", 20);
   }
-  if (attackPressed && has("sword") && player.attack <= 4) {
+  if (attackPressed && has("sword") && player.attack <= BASIC_ATTACK_RESTART_WINDOW) {
     if ((player.parryCharge || 0) > 0 && startParryCounter(room)) return;
     player.attack = ATTACK_MAX;
     player.attackType = !player.grounded && held("s") ? "down" : jumpPressed || held("arrowup", "w") ? "up" : "slash";
