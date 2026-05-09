@@ -1091,6 +1091,13 @@ function isBellTowerAscent(fromRoom, toRoom) {
   return !!fromRoom && !!toRoom && fromRoom.x === 1 && toRoom.x === 1 && toRoom.y === fromRoom.y - 1 && isBellTowerRouteRoom(fromRoom) && isBellTowerRouteRoom(toRoom);
 }
 
+function canEnterBellTowerRoom(fromRoom, toRoom, dx, dy) {
+  if (!isBellTowerRouteRoom(toRoom)) return true;
+  const withinStack = isBellTowerRouteRoom(fromRoom) && dx === 0 && Math.abs(dy) === 1 && fromRoom.x === toRoom.x;
+  const fromBottom = dx === 0 && dy < 0 && fromRoom.x === toRoom.x && fromRoom.y === toRoom.y + 1;
+  return withinStack || fromBottom;
+}
+
 function applyBellTowerRoute(room, tiles, rings) {
   if (!isBellTowerRouteRoom(room)) return;
   const key = `${room.x},${room.y}`;
@@ -1115,7 +1122,7 @@ function applyBellTowerRoute(room, tiles, rings) {
         tiles[1][x] = ".";
       }
     }
-    if (key !== "1,-4" && roomByCoord.has(`${room.x},${room.y + 1}`)) {
+    if (roomByCoord.has(`${room.x},${room.y + 1}`)) {
       for (let x = doorStart; x < doorEnd; x++) tiles[FLOOR_ROW][x] = ".";
     }
     placeParkourRings(rings, ringPoints);
@@ -2454,8 +2461,9 @@ function drawTinyText(text, x, y, color = "#f7e7bd") {
 }
 
 function moveActor(a, room) {
+  const solids = a === player ? room.solids.concat(bossBarrierSolids(room)) : room.solids;
   a.x += a.vx;
-  for (const s of room.solids) if (rects(a, s)) {
+  for (const s of solids) if (rects(a, s)) {
     const box = collisionBox(a);
     if (a.vx > 0) a.x = s.x - box.w - box.ox;
     if (a.vx < 0) a.x = s.x + s.w - box.ox;
@@ -2467,12 +2475,27 @@ function moveActor(a, room) {
   }
   a.y += a.vy;
   a.grounded = false;
-  for (const s of room.solids) if (rects(a, s)) {
+  for (const s of solids) if (rects(a, s)) {
     const box = collisionBox(a);
     if (a.vy > 0) { a.y = s.y - box.h - box.oy; a.grounded = true; a.jumps = 0; a.airDashUsed = false; a.jumpCutReady = false; a.jumpHold = 0; }
     if (a.vy < 0) a.y = s.y + s.h - box.oy;
     a.vy = 0;
   }
+}
+
+function bossBarrierSolids(room) {
+  if (!lockedGuardian(room)) return [];
+  const barriers = [];
+  const lowerDoorTop = Math.max(3, FLOOR_ROW - 3) * TILE;
+  const openLeft = room.tiles.some(row => row[0] === ".");
+  const openRight = room.tiles.some(row => row[COLS - 1] === ".");
+  const openTop = room.tiles[0].some(tile => tile === ".") || room.tiles[1].some(tile => tile === ".");
+  const openBottom = room.tiles[FLOOR_ROW].some(tile => tile === ".");
+  if (openLeft) barriers.push({ x: 0, y: lowerDoorTop, w: 16, h: H - lowerDoorTop, unclimbable: true });
+  if (openRight) barriers.push({ x: W - 16, y: lowerDoorTop, w: 16, h: H - lowerDoorTop, unclimbable: true });
+  if (openTop) barriers.push({ x: W / 2 - 44, y: 0, w: 88, h: 20, unclimbable: true });
+  if (openBottom) barriers.push({ x: W / 2 - 44, y: H - 20, w: 88, h: 20, unclimbable: true });
+  return barriers;
 }
 
 function has(a) {
@@ -2595,6 +2618,25 @@ function bounceFromExit(dx, dy) {
   shake = Math.max(shake, 3);
 }
 
+function holdAtExitBarrier(dx, dy) {
+  if (dx > 0) {
+    player.x = W - player.w - 18;
+    player.vx = Math.min(0, player.vx);
+  } else if (dx < 0) {
+    player.x = 18;
+    player.vx = Math.max(0, player.vx);
+  }
+  if (dy > 0) {
+    player.y = H - player.h - 22;
+    player.vy = Math.min(0, player.vy);
+  } else if (dy < 0) {
+    player.y = 20;
+    player.vy = Math.max(0, player.vy);
+  }
+  stopForcedMovement();
+  shake = Math.max(shake, 2);
+}
+
 function lockedGuardian(room = currentRoom()) {
   if (room.id === FINAL_BOSS_ROOM_ID && !player.finalBossDefeated) return room.enemies.find(enemy => enemy.bossType === "ironKing" && enemy.hp > 0);
   if (room.id === 12 && !has("dash")) return room.enemies.find(enemy => enemy.trialBoss && enemy.type === "hound" && enemy.hp > 0);
@@ -2664,7 +2706,7 @@ function enterRoom(dx, dy) {
   }
   const locked = lockedGuardian(old);
   if (locked) {
-    bounceFromExit(dx, dy);
+    holdAtExitBarrier(dx, dy);
     playSfx("block");
     say(locked.type === "thornImp" ? "The root crown knots the exits shut." : locked.type === "ossuaryBird" ? "Bone wings seal the ossuary vault." : locked.type === "gargoyle" ? "Bell-stone wings bar the tower doors." : locked.type === "boneGuard" ? "The Aegis oath seals the crypt." : locked.type === "penitent" ? "Cinder bars flare across the chapel doors." : locked.type === "moonKnight" ? "Moon-iron hooks seal the battlement." : locked.type === "anvilGuard" ? "Sundial teeth lock the furnace exits." : "Brakka's iron ward seals the room.");
     return;
@@ -2672,6 +2714,12 @@ function enterRoom(dx, dy) {
   const target = roomByCoord.get(`${old.x + dx},${old.y + dy}`);
   if (!target) {
     bounceFromExit(dx, dy);
+    return;
+  }
+  if (!canEnterBellTowerRoom(old, target, dx, dy)) {
+    holdAtExitBarrier(dx, dy);
+    playSfx("block");
+    say("The Bell Tower only opens from the foot of the shaft.");
     return;
   }
   if (dy < 0 && isBellTowerAscent(old, target) && !has("grapple")) {
