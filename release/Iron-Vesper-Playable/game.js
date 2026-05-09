@@ -1082,6 +1082,26 @@ function isMoonHookRouteRoom(room) {
   return room.moonHookRoute || new Set(["7,0", "8,0", "7,-1", "8,-1", "8,-2", "8,-3"]).has(`${room.x},${room.y}`);
 }
 
+function moonRouteKey(room) {
+  return room ? `${room.x},${room.y}` : "";
+}
+
+function moonBacktrackNeedsHook(fromRoom, toRoom) {
+  if (has("grapple")) return false;
+  const from = moonRouteKey(fromRoom);
+  const to = moonRouteKey(toRoom);
+  const reverseEdges = new Set([
+    "8,0>7,0",
+    "7,-1>7,0",
+    "8,-1>8,0",
+    "8,-1>7,-1",
+    "8,-2>8,-1",
+    "8,-3>8,-2",
+    "7,-3>8,-3"
+  ]);
+  return reverseEdges.has(`${from}>${to}`);
+}
+
 function applyMoonHookRoute(room, tiles, rings) {
   if (!isMoonHookRouteRoom(room)) return;
   const key = `${room.x},${room.y}`;
@@ -2596,6 +2616,12 @@ function enterRoom(dx, dy) {
   const target = roomByCoord.get(`${old.x + dx},${old.y + dy}`);
   if (!target) {
     bounceFromExit(dx, dy);
+    return;
+  }
+  if (moonBacktrackNeedsHook(old, target)) {
+    bounceFromExit(dx, dy);
+    playSfx("block");
+    say("Moonstone drops sheer behind you. The Moon Hook is needed to return.");
     return;
   }
   if (dy < 0 && isBossArenaRoom(target)) {
