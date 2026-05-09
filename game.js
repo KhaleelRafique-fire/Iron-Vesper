@@ -911,6 +911,26 @@ function addSpikeRun(tiles, x1, x2) {
   }
 }
 
+function applyMossSpikes(room, tiles) {
+  if (room.theme !== "moss" || room.checkpointAltar || abilityTrials[room.id] || room.rewardAbility) return;
+  const doorStart = Math.floor(COLS / 2) - 2;
+  const doorEnd = doorStart + 4;
+  const blocked = new Set();
+  if (roomByCoord.has(`${room.x - 1},${room.y}`)) for (let x = 0; x <= 5; x++) blocked.add(x);
+  if (roomByCoord.has(`${room.x + 1},${room.y}`)) for (let x = COLS - 6; x < COLS; x++) blocked.add(x);
+  if (roomByCoord.has(`${room.x},${room.y + 1}`)) for (let x = doorStart - 2; x <= doorEnd + 1; x++) blocked.add(x);
+  const seed = parkourSeed(room);
+  const spans = seed % 2
+    ? [[6, 11], [17, 22], [28, 34]]
+    : [[7, 13], [19, 24], [30, 35]];
+  for (const [x1, x2] of spans) {
+    for (let x = Math.max(2, x1); x <= Math.min(COLS - 3, x2); x++) {
+      if (blocked.has(x) || tiles[GROUND_ROW][x] !== ".") continue;
+      tiles[GROUND_ROW][x] = "^";
+    }
+  }
+}
+
 function isBossArenaRoom(room) {
   return !!room && (!!abilityTrials[room.id] || room.id === FINAL_BOSS_ROOM_ID);
 }
@@ -1730,6 +1750,7 @@ function makeRoom(room) {
   sanitizeIronThroneArena(built);
   clearRoomExitApproaches(built, built.tiles);
   sanitizeBossArenaBottomEntry(built);
+  applyMossSpikes(built, built.tiles);
   if (trial && !["dash", "superDash", "wall", "shield", "fire", "doubleJump", "grapple", "time"].includes(trial.ability)) built.rewardPortal = { x: W - 66, y: FLOOR_Y - 72, w: 34, h: 42, rewardRoom: trial.rewardRoom };
   if (room.returnRoom != null && !room.knightHouse && !bossArena) built.returnPortal = {
     x: room.returnPortalX ?? 24,
@@ -2277,6 +2298,7 @@ function loadGame() {
       sanitizeBossArenaSideExits(room);
       sanitizeIronThroneArena(room);
       sanitizeBossArenaBottomEntry(room);
+      applyMossSpikes(room, room.tiles);
       rebuildCollision(room);
       room.items.forEach((item, i) => item.taken = !!state.items?.[i]);
       room.enemies.forEach((enemy, i) => enemy.hp = Number.isFinite(state.enemies?.[i]) ? state.enemies[i] : enemy.hp);
