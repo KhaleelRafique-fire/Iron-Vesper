@@ -1087,6 +1087,10 @@ function isBellTowerRouteRoom(room) {
   return new Set(["1,-1", "1,-2", "1,-3", "1,-4"]).has(`${room.x},${room.y}`);
 }
 
+function isBellTowerAscent(fromRoom, toRoom) {
+  return !!fromRoom && !!toRoom && fromRoom.x === 1 && toRoom.x === 1 && toRoom.y === fromRoom.y - 1 && isBellTowerRouteRoom(fromRoom) && isBellTowerRouteRoom(toRoom);
+}
+
 function applyBellTowerRoute(room, tiles, rings) {
   if (!isBellTowerRouteRoom(room)) return;
   const key = `${room.x},${room.y}`;
@@ -1094,8 +1098,8 @@ function applyBellTowerRoute(room, tiles, rings) {
   clearParkourInterior(tiles);
   const doorStart = Math.floor(COLS / 2) - 2;
   const doorEnd = doorStart + 4;
-  const shaftLeft = doorStart - 3;
-  const shaftRight = doorEnd + 2;
+  const shaftLeft = doorStart - 1;
+  const shaftRight = doorEnd;
   const hookShaft = ringPoints => {
     for (let y = 0; y < FLOOR_ROW; y++) {
       tiles[y][0] = "#";
@@ -2667,6 +2671,12 @@ function enterRoom(dx, dy) {
   const target = roomByCoord.get(`${old.x + dx},${old.y + dy}`);
   if (!target) {
     bounceFromExit(dx, dy);
+    return;
+  }
+  if (dy < 0 && isBellTowerAscent(old, target) && !has("grapple")) {
+    bounceFromExit(dx, dy);
+    playSfx("block");
+    say("The Bell Tower shaft is too sheer. The Moon Hook must catch the rings.");
     return;
   }
   if (dy < 0 && isBossArenaRoom(target) && target.id !== 1) {
