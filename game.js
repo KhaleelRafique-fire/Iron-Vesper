@@ -2368,12 +2368,13 @@ function loadGame() {
       if (!room) continue;
       room.visited = !!state.visited;
       if (room.visited && !save.visitedAreas) visitedAreas.add(room.theme);
-      if (!room.knightHouse && !isMoonHookRouteRoom(room) && state.tiles?.every(row => row.length === COLS)) room.tiles = state.tiles.map(row => row.split(""));
+      if (!room.knightHouse && !isMoonHookRouteRoom(room) && !isBellTowerRouteRoom(room) && state.tiles?.every(row => row.length === COLS)) room.tiles = state.tiles.map(row => row.split(""));
       sanitizeBossArenaBottomExit(room);
       sanitizeBossArenaSideExits(room);
       sanitizeIronThroneArena(room);
       sanitizeBossArenaBottomEntry(room);
       applyMossSpikes(room, room.tiles);
+      applyBellTowerRoute(room, room.tiles, room.rings);
       rebuildCollision(room);
       room.items.forEach((item, i) => item.taken = !!state.items?.[i]);
       room.enemies.forEach((enemy, i) => enemy.hp = Number.isFinite(state.enemies?.[i]) ? state.enemies[i] : enemy.hp);
