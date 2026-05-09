@@ -6137,6 +6137,24 @@ function drawPlayer() {
   pixelRect(x + 3 + lowerLean, bodyY + 9, 6, 1, "rgba(16,19,23,.82)");
   pixelRect(x + 1 + lowerLean, waistY, 9, 2, "#2f3d4b");
   pixelRect(x + 4 + lowerLean, waistY + 1, 3, 1, "#f3cc67");
+  const drawHipSword = () => {
+    if (!has("sword")) return;
+    const side = -player.dir;
+    const gait = run ? (walkFrame === 1 ? 1 : walkFrame === 3 ? -1 : 0) : crawling ? (walkFrame === 1 || walkFrame === 3 ? 0.5 : 0) : 0;
+    const hipX = x + 5 + lowerLean + side * 6 - (dashPose ? player.dir * 2 : 0);
+    const hipY = waistY + 1 + gait + (airborne ? -1 : 0);
+    const sheath = attacking ? "#263b50" : "#1f2a35";
+    pixelRect(hipX - (side < 0 ? 3 : 0), hipY, 5, 2, trim);
+    pixelRect(hipX + side * 2, hipY - 2, 3, 3, "#f3cc67");
+    for (let i = 0; i < 4; i++) {
+      const sx = hipX + side * (2 + i * 2);
+      const sy = hipY + 2 + i;
+      pixelRect(sx, sy, 3, 2, sheath);
+      pixelRect(sx + (side > 0 ? 2 : 0), sy, 1, 2, attacking ? "#6f7f8a" : "#cfd8dc");
+    }
+    pixelRect(hipX + side * 10, hipY + 6, 3, 2, "#0c0f12");
+  };
+  drawHipSword();
   pixelRect(x - 2 + upperLean, bodyY + 1, 4, 3, armSilver);
   pixelRect(x + 9 + upperLean, bodyY + 1, 4, 3, armSilver);
   pixelRect(x - 2 + upperLean, bodyY + 3, 3, 2, armShadow);
