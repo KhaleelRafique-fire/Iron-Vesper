@@ -990,7 +990,6 @@ function applyKnightHouseLayout(tiles, decor) {
     tiles[y][0] = "#";
     tiles[y][COLS - 1] = "#";
   }
-  setTileSpan(tiles, 13, 6, 13);
   decor.push(
     { x: 44, y: FLOOR_Y - 50, t: "houseExit" },
     { x: 92, y: FLOOR_Y - 42, t: "bed" },
@@ -2244,7 +2243,7 @@ function loadGame() {
       if (!room) continue;
       room.visited = !!state.visited;
       if (room.visited && !save.visitedAreas) visitedAreas.add(room.theme);
-      if (!isMoonHookRouteRoom(room) && state.tiles?.every(row => row.length === COLS)) room.tiles = state.tiles.map(row => row.split(""));
+      if (!room.knightHouse && !isMoonHookRouteRoom(room) && state.tiles?.every(row => row.length === COLS)) room.tiles = state.tiles.map(row => row.split(""));
       sanitizeBossArenaBottomExit(room);
       sanitizeBossArenaSideExits(room);
       sanitizeIronThroneArena(room);
