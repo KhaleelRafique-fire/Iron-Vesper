@@ -23,9 +23,9 @@
   --ui-panel-pad: 28px;
   --ui-card-pad: 20px;
   --ui-meter-h: 28px;
-  --ui-overlay-w: 210px;
-  --ui-full-overlay-w: 320px;
-  --ui-overlay-meter-h: 14px;
+  --ui-overlay-w: 190px;
+  --ui-full-overlay-w: 176px;
+  --ui-overlay-meter-h: 12px;
   --ui-button-h: 62px;
   --ui-modal-button-h: 64px;
   --ui-modal-pad: 28px;
@@ -265,18 +265,27 @@ body {
 }
 
 .game-fullscreen .game-hud-overlay {
-  width: var(--ui-full-overlay-w);
-  padding: var(--ui-space-md);
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  top: 10px;
+  left: 10px;
+  width: min(var(--ui-full-overlay-w), 176px);
+  padding: 8px;
+  background: rgba(7, 9, 12, .56);
+  border-color: rgba(213, 155, 68, .42);
 }
 
 .game-fullscreen .overlay-meter-label {
-  font-size: var(--ui-font-md);
-  margin-bottom: var(--ui-space-xs);
+  font-size: 11px;
+  line-height: 1;
+  margin: 0;
 }
 
 .game-fullscreen .overlay-bar {
-  height: var(--ui-meter-h);
-  margin-bottom: var(--ui-space-sm);
+  height: 10px;
+  margin: 0;
 }
 
 .game-fullscreen .toast {
