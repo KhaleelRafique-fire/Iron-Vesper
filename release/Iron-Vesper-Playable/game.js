@@ -20,8 +20,7 @@ const GROUND_ROW = ROWS - 2;
 const FLOOR_Y = FLOOR_ROW * TILE;
 const GRAV = 0.36;
 const ATTACK_MAX = 18;
-const BASIC_ATTACK_COOLDOWN = Math.ceil(0.05 * 60);
-const BASIC_ATTACK_RESTART_WINDOW = Math.max(0, 4 - BASIC_ATTACK_COOLDOWN);
+const BASIC_ATTACK_COOLDOWN = Math.ceil(0.5 * 60);
 const SHIELD_MAX = 10;
 const BASH_MAX = 14;
 const DASH_MAX = 20;
@@ -1829,7 +1828,7 @@ resetWorld();
 
 const player = {
   x: 42, y: 146, w: 9, h: 20, vx: 0, vy: 0, dir: 1, hp: 10, maxHp: 10, mp: 10, maxMp: 10, healRank: 0,
-  room: START_ROOM_ID, grounded: false, coyote: 0, jumps: 0, airDashUsed: false, jumpCutReady: false, jumpHold: 0, dash: 0, bash: 0, hurt: 0, attack: 0, attackType: "slash", attackBoost: false, shield: 0, shieldPenalty: 0, parryTimer: 0, parryCharge: 0, parryFlash: 0, counter: null, heal: 0, healLock: 0, wingFlare: 0, timeSlow: 0, timeActive: 0, timeCooldown: 0, timeFrozen: 0, timeBreak: 0, slowIntent: 0, superCharge: 0, superDash: 0, superShield: false, lookUp: false, crouch: false, crawl: false, grapple: null,
+  room: START_ROOM_ID, grounded: false, coyote: 0, jumps: 0, airDashUsed: false, jumpCutReady: false, jumpHold: 0, dash: 0, bash: 0, hurt: 0, attack: 0, attackType: "slash", attackBoost: false, basicAttackCooldown: 0, shield: 0, shieldPenalty: 0, parryTimer: 0, parryCharge: 0, parryFlash: 0, counter: null, heal: 0, healLock: 0, wingFlare: 0, timeSlow: 0, timeActive: 0, timeCooldown: 0, timeFrozen: 0, timeBreak: 0, slowIntent: 0, superCharge: 0, superDash: 0, superShield: false, lookUp: false, crouch: false, crawl: false, grapple: null,
   cape: createCapeState(),
   abilities: { sword: false, doubleJump: false, dash: false, superDash: false, wall: false, fire: false, grapple: false, shield: false, time: false },
   finalBossDefeated: false
@@ -2075,7 +2074,7 @@ function currentRoom() {
 function basePlayerState() {
   return {
     x: 42, y: 146, w: 9, h: 20, vx: 0, vy: 0, dir: 1, hp: 10, maxHp: 10, mp: 10, maxMp: 10, healRank: 0,
-    room: START_ROOM_ID, grounded: false, coyote: 0, jumps: 0, airDashUsed: false, jumpCutReady: false, jumpHold: 0, dash: 0, bash: 0, hurt: 0, attack: 0, attackType: "slash", attackBoost: false, shield: 0, shieldPenalty: 0, parryTimer: 0, parryCharge: 0, parryFlash: 0, counter: null, heal: 0, healLock: 0, wingFlare: 0, timeSlow: 0, timeActive: 0, timeCooldown: 0, timeFrozen: 0, timeBreak: 0, slowIntent: 0, superCharge: 0, superDash: 0, superShield: false, lookUp: false, crouch: false, crawl: false, grapple: null,
+    room: START_ROOM_ID, grounded: false, coyote: 0, jumps: 0, airDashUsed: false, jumpCutReady: false, jumpHold: 0, dash: 0, bash: 0, hurt: 0, attack: 0, attackType: "slash", attackBoost: false, basicAttackCooldown: 0, shield: 0, shieldPenalty: 0, parryTimer: 0, parryCharge: 0, parryFlash: 0, counter: null, heal: 0, healLock: 0, wingFlare: 0, timeSlow: 0, timeActive: 0, timeCooldown: 0, timeFrozen: 0, timeBreak: 0, slowIntent: 0, superCharge: 0, superDash: 0, superShield: false, lookUp: false, crouch: false, crawl: false, grapple: null,
     cape: createCapeState(),
     abilities: { sword: false, doubleJump: false, dash: false, superDash: false, wall: false, fire: false, grapple: false, shield: false, time: false },
     finalBossDefeated: false
@@ -2246,7 +2245,7 @@ function loadGame() {
     const save = JSON.parse(raw);
     resetWorld();
     resetPlayer();
-    Object.assign(player, save.player, { vx: 0, vy: 0, grounded: false, coyote: 0, jumps: 0, airDashUsed: false, jumpCutReady: false, jumpHold: 0, dash: 0, bash: 0, hurt: 0, attack: 0, attackType: "slash", attackBoost: false, shield: 0, shieldPenalty: 0, parryTimer: 0, parryCharge: 0, parryFlash: 0, counter: null, heal: 0, healLock: 0, wingFlare: 0, timeSlow: 0, timeActive: 0, timeCooldown: 0, timeFrozen: 0, timeBreak: 0, slowIntent: 0, superCharge: 0, superDash: 0, superShield: false, lookUp: false, crouch: false, crawl: false, grapple: null, cape: createCapeState() });
+    Object.assign(player, save.player, { vx: 0, vy: 0, grounded: false, coyote: 0, jumps: 0, airDashUsed: false, jumpCutReady: false, jumpHold: 0, dash: 0, bash: 0, hurt: 0, attack: 0, attackType: "slash", attackBoost: false, basicAttackCooldown: 0, shield: 0, shieldPenalty: 0, parryTimer: 0, parryCharge: 0, parryFlash: 0, counter: null, heal: 0, healLock: 0, wingFlare: 0, timeSlow: 0, timeActive: 0, timeCooldown: 0, timeFrozen: 0, timeBreak: 0, slowIntent: 0, superCharge: 0, superDash: 0, superShield: false, lookUp: false, crouch: false, crawl: false, grapple: null, cape: createCapeState() });
     const savedAbilities = save.player.abilities || {};
     player.abilities = { ...basePlayerState().abilities, ...savedAbilities };
     if (!Object.prototype.hasOwnProperty.call(savedAbilities, "sword")) player.abilities.sword = true;
@@ -3340,9 +3339,10 @@ function playerInput(room) {
     }
     addParticles(player.x + 6, player.y + 8, "#f3cc67", 20);
   }
-  if (attackPressed && has("sword") && player.attack <= BASIC_ATTACK_RESTART_WINDOW) {
+  if (attackPressed && has("sword") && (player.basicAttackCooldown || 0) <= 0) {
     if ((player.parryCharge || 0) > 0 && startParryCounter(room)) return;
     player.attack = ATTACK_MAX;
+    player.basicAttackCooldown = BASIC_ATTACK_COOLDOWN;
     player.attackType = !player.grounded && held("s") ? "down" : jumpPressed || held("arrowup", "w") ? "up" : "slash";
     player.attackBoost = player.parryCharge > 0;
     if (player.attackBoost) {
@@ -5299,7 +5299,7 @@ function restart(msg = "Back to Hearthmere.") {
   bossIntro = null;
   if (dialogue) endDialogue();
   const respawn = world.has(respawnPoint.room) ? respawnPoint : { room: START_ROOM_ID, x: 42, y: 146 };
-  Object.assign(player, { x: respawn.x, y: respawn.y, vx: 0, vy: 0, hp: player.maxHp, mp: player.maxMp, room: respawn.room, grounded: false, coyote: 0, jumps: 0, airDashUsed: false, jumpCutReady: false, jumpHold: 0, hurt: 0, attack: 0, attackType: "slash", attackBoost: false, shield: 0, shieldPenalty: 0, parryTimer: 0, parryCharge: 0, parryFlash: 0, counter: null, heal: 0, healLock: 0, wingFlare: 0, timeSlow: 0, timeActive: 0, timeCooldown: 0, timeFrozen: 0, timeBreak: 0, slowIntent: 0, superCharge: 0, superDash: 0, superShield: false, lookUp: false, crouch: false, crawl: false, dash: 0, bash: 0, grapple: null, cape: createCapeState() });
+  Object.assign(player, { x: respawn.x, y: respawn.y, vx: 0, vy: 0, hp: player.maxHp, mp: player.maxMp, room: respawn.room, grounded: false, coyote: 0, jumps: 0, airDashUsed: false, jumpCutReady: false, jumpHold: 0, hurt: 0, attack: 0, attackType: "slash", attackBoost: false, basicAttackCooldown: 0, shield: 0, shieldPenalty: 0, parryTimer: 0, parryCharge: 0, parryFlash: 0, counter: null, heal: 0, healLock: 0, wingFlare: 0, timeSlow: 0, timeActive: 0, timeCooldown: 0, timeFrozen: 0, timeBreak: 0, slowIntent: 0, superCharge: 0, superDash: 0, superShield: false, lookUp: false, crouch: false, crawl: false, dash: 0, bash: 0, grapple: null, cape: createCapeState() });
   setRoomStart(player.x, player.y);
   clearRoomEffects();
   const room = currentRoom();
@@ -5432,6 +5432,7 @@ function update() {
   }
   player.hurt = Math.max(0, player.hurt - 1);
   player.attack = Math.max(0, player.attack - 1);
+  player.basicAttackCooldown = Math.max(0, (player.basicAttackCooldown || 0) - 1);
   if (player.attack <= 0) player.attackBoost = false;
   player.bash = Math.max(0, player.bash - 1);
   if (!(held("s") && has("shield") && player.shield > 0)) player.shield = Math.max(0, player.shield - 1);
@@ -6168,19 +6169,19 @@ function drawPlayer() {
   pixelRect(x + 1 + lowerLean, waistY, 9, 2, "#2f3d4b");
   pixelRect(x + 4 + lowerLean, waistY + 1, 3, 1, "#f3cc67");
   const drawHipSword = () => {
-    if (!has("sword")) return;
+    if (!has("sword") || attacking) return;
     const side = -player.dir;
     const gait = run ? (walkFrame === 1 ? 1 : walkFrame === 3 ? -1 : 0) : crawling ? (walkFrame === 1 || walkFrame === 3 ? 0.5 : 0) : 0;
     const hipX = x + 5 + lowerLean + side * 6 - (dashPose ? player.dir * 2 : 0);
     const hipY = waistY + 1 + gait + (airborne ? -1 : 0);
-    const sheath = attacking ? "#263b50" : "#1f2a35";
+    const sheath = "#1f2a35";
     pixelRect(hipX - (side < 0 ? 3 : 0), hipY, 5, 2, trim);
     pixelRect(hipX + side * 2, hipY - 2, 3, 3, "#f3cc67");
     for (let i = 0; i < 4; i++) {
       const sx = hipX + side * (2 + i * 2);
       const sy = hipY + 2 + i;
       pixelRect(sx, sy, 3, 2, sheath);
-      pixelRect(sx + (side > 0 ? 2 : 0), sy, 1, 2, attacking ? "#6f7f8a" : "#cfd8dc");
+      pixelRect(sx + (side > 0 ? 2 : 0), sy, 1, 2, "#cfd8dc");
     }
     pixelRect(hipX + side * 10, hipY + 6, 3, 2, "#0c0f12");
   };
