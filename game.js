@@ -1082,6 +1082,77 @@ function isMoonHookRouteRoom(room) {
   return room.moonHookRoute || new Set(["7,0", "8,0", "7,-1", "8,-1", "8,-2", "8,-3"]).has(`${room.x},${room.y}`);
 }
 
+function isBellTowerRouteRoom(room) {
+  if (!room || room.theme !== "tower" || abilityTrials[room.id] || room.rewardAbility) return false;
+  return new Set(["1,-1", "1,-2", "1,-3", "0,-3", "2,-3", "2,-2"]).has(`${room.x},${room.y}`);
+}
+
+function applyBellTowerRoute(room, tiles, rings) {
+  if (!isBellTowerRouteRoom(room)) return;
+  const key = `${room.x},${room.y}`;
+  rings.length = 0;
+  clearParkourInterior(tiles);
+  if (key === "1,-1") {
+    rings.push({ x: W / 2, y: 62 });
+    return;
+  }
+  if (key === "1,-2") {
+    placePlatforms(tiles, [
+      [15, 18, 22],
+      [12, 12, 16],
+      [9, 22, 26],
+      [6, 16, 20],
+      [4, 20, 24]
+    ]);
+    rings.push({ x: W / 2 + 8, y: 74 });
+    return;
+  }
+  if (key === "1,-3") {
+    placePlatforms(tiles, [
+      [15, 4, 9],
+      [12, 14, 18],
+      [9, 22, 27],
+      [6, 15, 20],
+      [4, 20, 24],
+      [14, 31, 35]
+    ]);
+    rings.push({ x: W / 2, y: 58 }, { x: 286, y: 88 });
+    return;
+  }
+  if (key === "0,-3") {
+    placePlatforms(tiles, [
+      [15, 28, 34],
+      [12, 20, 25],
+      [9, 12, 17],
+      [6, 21, 26],
+      [4, 14, 18]
+    ]);
+    rings.push({ x: 196, y: 66 });
+    return;
+  }
+  if (key === "2,-3") {
+    placePlatforms(tiles, [
+      [15, 4, 9],
+      [12, 13, 18],
+      [9, 23, 28],
+      [6, 14, 19],
+      [4, 22, 27]
+    ]);
+    rings.push({ x: 248, y: 64 });
+    return;
+  }
+  if (key === "2,-2") {
+    placePlatforms(tiles, [
+      [15, 5, 10],
+      [12, 15, 19],
+      [9, 24, 29],
+      [6, 16, 21],
+      [4, 24, 28]
+    ]);
+    rings.push({ x: 238, y: 66 });
+  }
+}
+
 function applyMoonHookRoute(room, tiles, rings) {
   if (!isMoonHookRouteRoom(room)) return;
   const key = `${room.x},${room.y}`;
@@ -1586,6 +1657,7 @@ function makeRoom(room) {
   else if (room.sundialAltarRoom) applySundialAltarRoomLayout(tiles, decor);
   else if (room.theme === "village") applyVillageLayout(room, tiles, decor);
   applyParkourLayout(room, tiles, rings);
+  applyBellTowerRoute(room, tiles, rings);
   applyMoonHookRoute(room, tiles, rings);
   if (trial || room.rewardAbility) {
     for (let y = 2; y < FLOOR_ROW; y++) for (let x = 1; x < COLS - 1; x++) tiles[y][x] = ".";
@@ -1640,7 +1712,7 @@ function makeRoom(room) {
     const sx = Math.min(20, COLS - 3);
     for (let y = Math.max(4, FLOOR_ROW - 5); y < FLOOR_ROW; y++) tiles[y][sx] = "S";
   }
-  if (["keep", "tower"].includes(room.theme) && !isMoonHookRouteRoom(room) && !bossArena) rings.push({ x: 185, y: 65 }, { x: 270, y: 96 });
+  if (["keep", "tower"].includes(room.theme) && !isMoonHookRouteRoom(room) && !isBellTowerRouteRoom(room) && !bossArena) rings.push({ x: 185, y: 65 }, { x: 270, y: 96 });
   if (room.id === FINAL_BOSS_ROOM_ID) rings.push({ x: 122, y: 78 }, { x: W / 2, y: 54 }, { x: W - 122, y: 78 });
 
   if (room.rewardAbility && !["dash", "superDash", "wall", "shield", "fire", "doubleJump", "grapple", "time"].includes(room.rewardAbility)) {
