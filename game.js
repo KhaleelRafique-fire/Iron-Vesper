@@ -267,6 +267,9 @@ function drawTitleCanvas() {
 
   r(142, 58, 88, 88, "#f2a34a");
   r(166, 70, 76, 76, "#07101d");
+  for (let i = 0; i < 5; i++) r(118 - i * 7, 36 - i * 5, 142 + i * 18, 128 + i * 12, `rgba(242,163,74,${0.055 - i * 0.008})`);
+  r(153, 65, 28, 6, "rgba(255,241,189,.34)");
+  r(136, 110, 18, 4, "rgba(255,241,189,.22)");
   r(129, 49, 8, 8, "rgba(255,231,165,.45)");
   r(110, 83, 4, 4, "rgba(255,231,165,.35)");
   for (let i = 0; i < 95; i++) {
@@ -301,6 +304,11 @@ function drawTitleCanvas() {
   mountain(386, "#101827", "rgba(255,255,255,.055)", -40, 40, 28, 72, 92);
   mountain(474, "#1f4b2d", "rgba(255,255,255,.08)", -36, 34, 34, 62, 76);
   mountain(518, "#2f6c36", "rgba(255,255,255,.085)", 220, 30, 30, 72, 82);
+  for (let y = 180; y < 472; y += 18) {
+    const a = (y - 164) / 420;
+    r(216 + (y % 36), y, 522 - (y - 180) * 0.42, 5, `rgba(198,66,60,${0.05 * (1 - a)})`);
+    r(286 + (y % 54), y + 7, 356 - (y - 180) * 0.28, 3, `rgba(243,204,103,${0.035 * (1 - a)})`);
+  }
   for (let x = 0; x < sceneW; x += 22) {
     const y = 456 + ((x / 22) % 6) * 7;
     r(x, y, 17, 5, x % 44 ? "#6ea35f" : "#d59b44");
@@ -353,6 +361,17 @@ function drawTitleCanvas() {
   tower(cx + 28, cy + 50, 100, 246);
   tower(cx + 292, cy - 14, 118, 310, true);
   tower(cx + 552, cy + 36, 104, 260);
+  const kingOmenX = cx + 344;
+  const kingOmenY = cy + 8 + Math.floor(Math.sin(t / 18) * 2);
+  r(kingOmenX - 31, kingOmenY + 42, 82, 6, "rgba(198,66,60,.2)");
+  r(kingOmenX - 16, kingOmenY + 19, 50, 28, "rgba(7,9,12,.72)");
+  r(kingOmenX - 9, kingOmenY + 2, 36, 18, "rgba(7,9,12,.8)");
+  r(kingOmenX - 13, kingOmenY - 6, 44, 8, "#f3cc67");
+  r(kingOmenX - 7, kingOmenY - 17, 7, 12, "#fff1bd");
+  r(kingOmenX + 7, kingOmenY - 21, 8, 16, "#f3cc67");
+  r(kingOmenX + 22, kingOmenY - 17, 7, 12, "#fff1bd");
+  r(kingOmenX - 2, kingOmenY + 10, 6, 4, "#c6423c");
+  r(kingOmenX + 18, kingOmenY + 10, 6, 4, "#c6423c");
   r(cx + 318, cy + 252, 66, 60, "#080b12");
   r(cx + 328, cy + 262, 46, 50, "#17100e");
   for (let x = cx + 176; x < cx + 510; x += 84) {
@@ -406,6 +425,11 @@ function drawTitleCanvas() {
     const fade = (720 - y) / 116;
     r(0, y, sceneW, 3, `rgba(116,209,199,${0.08 * fade})`);
   }
+  for (let y = 528; y < 620; y += 10) {
+    const drift = Math.sin(t / 24 + y) * 11;
+    r(250 + drift, y, 420 - (y - 528) * 2.2, 4, `rgba(215,220,225,${0.08 - (y - 528) * 0.00055})`);
+    r(82 - drift * 0.4, y + 5, 210, 3, `rgba(116,209,199,${0.045 - (y - 528) * 0.0003})`);
+  }
   for (let x = 260; x < 695; x += 22) {
     const offset = Math.floor(Math.sin(t / 20 + x) * 4);
     r(x + offset, 608 + (x % 44), 18, 4, "rgba(58,48,41,.72)");
@@ -441,6 +465,10 @@ function drawTitleCanvas() {
   r(kx + 79, ky + 18, 8, 164, "#fff1bd");
   r(kx + 76, ky + 104, 25, 8, "#d59b44");
   r(kx + 70, ky + 114, 36, 10, "#5b2417");
+  r(kx + 68, ky + 30 + (wave % 5), 45, 3, "rgba(255,241,189,.32)");
+  r(kx + 88, ky + 18, 4, 150, "rgba(255,255,255,.18)");
+  r(kx - 52, ky + 132, 148, 6, "rgba(198,66,60,.14)");
+  r(kx - 41, ky + 139, 122, 3, "rgba(255,241,189,.12)");
   r(kx + 10, ky + 4, 4, 25, "rgba(255,255,255,.32)");
   r(kx + 34, ky + 7, 4, 22, "rgba(0,0,0,.22)");
   r(kx + 3, ky + 64, 48, 3, "#fff1bd");
