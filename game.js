@@ -1082,33 +1082,31 @@ function isMoonHookRouteRoom(room) {
   return room.moonHookRoute || new Set(["7,0", "8,0", "7,-1", "8,-1", "8,-2", "8,-3"]).has(`${room.x},${room.y}`);
 }
 
-function moonRouteKey(room) {
-  return room ? `${room.x},${room.y}` : "";
-}
-
-function moonBacktrackNeedsHook(fromRoom, toRoom) {
-  if (has("grapple")) return false;
-  const from = moonRouteKey(fromRoom);
-  const to = moonRouteKey(toRoom);
-  const reverseEdges = new Set([
-    "8,0>7,0",
-    "7,-1>7,0",
-    "8,-1>8,0",
-    "8,-1>7,-1",
-    "8,-2>8,-1",
-    "8,-3>8,-2",
-    "7,-3>8,-3"
-  ]);
-  return reverseEdges.has(`${from}>${to}`);
-}
-
 function applyMoonHookRoute(room, tiles, rings) {
   if (!isMoonHookRouteRoom(room)) return;
   const key = `${room.x},${room.y}`;
   rings.length = 0;
   clearParkourInterior(tiles);
+  const doorStart = Math.floor(COLS / 2) - 2;
+  const doorEnd = doorStart + 4;
+  const hasLeft = roomByCoord.has(`${room.x - 1},${room.y}`);
+  const hasBottom = roomByCoord.has(`${room.x},${room.y + 1}`);
   const gateX = key === "8,-3" ? 13 : key === "8,-2" ? 17 : key === "8,-1" ? 20 : 23;
-  setTileRect(tiles, gateX, 5, gateX + 1, GROUND_ROW, "U");
+  if (hasLeft) {
+    setTileRect(tiles, 6, 6, 7, GROUND_ROW, "U");
+    setTileSpan(tiles, 14, 2, 5);
+    setTileSpan(tiles, 11, 2, 5);
+    setTileSpan(tiles, 8, 3, 5);
+    setTileSpan(tiles, 7, 4, 5);
+  }
+  if (hasBottom) {
+    setTileRect(tiles, doorStart - 4, 7, doorStart - 3, GROUND_ROW, "U");
+    setTileRect(tiles, doorEnd + 2, 7, doorEnd + 3, GROUND_ROW, "U");
+    setTileSpan(tiles, 14, doorStart - 2, doorStart + 1);
+    setTileSpan(tiles, 11, doorStart + 2, doorEnd + 1);
+    setTileSpan(tiles, 8, doorEnd, doorEnd + 4);
+  }
+  if (!hasLeft && !hasBottom) setTileRect(tiles, gateX, 5, gateX + 1, GROUND_ROW, "U");
   placePlatforms(tiles, [
     [15, 2, 8],
     [12, 9, 15],
@@ -1120,10 +1118,9 @@ function applyMoonHookRoute(room, tiles, rings) {
   if (key === "8,-2" || key === "8,-3") {
     setTileSpan(tiles, 10, gateX + 8, gateX + 13);
   }
-  placeParkourRings(rings, [
-    [(gateX + 7) * TILE, 78],
-    [(gateX - 3) * TILE, 72]
-  ]);
+  if (hasLeft) rings.push({ x: 128, y: 76 });
+  if (hasBottom) rings.push({ x: W / 2, y: 70 });
+  if (!hasLeft && !hasBottom) rings.push({ x: (gateX + 7) * TILE, y: 78 }, { x: (gateX - 3) * TILE, y: 72 });
 }
 
 function applyParkourLayout(room, tiles, rings) {
@@ -2616,12 +2613,6 @@ function enterRoom(dx, dy) {
   const target = roomByCoord.get(`${old.x + dx},${old.y + dy}`);
   if (!target) {
     bounceFromExit(dx, dy);
-    return;
-  }
-  if (moonBacktrackNeedsHook(old, target)) {
-    bounceFromExit(dx, dy);
-    playSfx("block");
-    say("Moonstone drops sheer behind you. The Moon Hook is needed to return.");
     return;
   }
   if (dy < 0 && isBossArenaRoom(target)) {
