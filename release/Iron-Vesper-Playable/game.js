@@ -576,9 +576,9 @@ const rooms = [
   { x: 4, y: 8, theme: "bone" },
   { x: 5, y: 7, theme: "bone" },
   { x: 1, y: -1, theme: "tower" },
-  { x: 2, y: -2, theme: "tower" },
-  { x: 2, y: -3, theme: "tower" },
-  { x: 0, y: -3, theme: "tower" },
+  { x: 2, y: -2, theme: "tower", removed: true },
+  { x: 2, y: -3, theme: "tower", removed: true },
+  { x: 0, y: -3, theme: "tower", removed: true },
   { x: 1, y: -3, theme: "tower" },
   { x: 3, y: -2, theme: "chapel" },
   { x: 4, y: -2, theme: "chapel" },
@@ -1092,9 +1092,28 @@ function applyBellTowerRoute(room, tiles, rings) {
   const key = `${room.x},${room.y}`;
   rings.length = 0;
   clearParkourInterior(tiles);
+  const doorStart = Math.floor(COLS / 2) - 2;
+  const doorEnd = doorStart + 4;
+  const shaftLeft = doorStart - 3;
+  const shaftRight = doorEnd + 2;
   const hookShaft = ringPoints => {
-    setTileRect(tiles, 7, 3, 8, GROUND_ROW, "U");
-    setTileRect(tiles, COLS - 9, 3, COLS - 8, GROUND_ROW, "U");
+    for (let y = 0; y < FLOOR_ROW; y++) {
+      tiles[y][0] = "#";
+      tiles[y][COLS - 1] = "#";
+    }
+    setTileRect(tiles, 1, 2, shaftLeft - 1, FLOOR_ROW - 1);
+    setTileRect(tiles, shaftRight + 1, 2, COLS - 2, FLOOR_ROW - 1);
+    setTileColumn(tiles, shaftLeft, 2, GROUND_ROW, "U");
+    setTileColumn(tiles, shaftRight, 2, GROUND_ROW, "U");
+    if (roomByCoord.has(`${room.x},${room.y - 1}`)) {
+      for (let x = doorStart; x < doorEnd; x++) {
+        tiles[0][x] = ".";
+        tiles[1][x] = ".";
+      }
+    }
+    if (key !== "1,-4" && roomByCoord.has(`${room.x},${room.y + 1}`)) {
+      for (let x = doorStart; x < doorEnd; x++) tiles[FLOOR_ROW][x] = ".";
+    }
     placeParkourRings(rings, ringPoints);
   };
   if (key === "1,-1") {
@@ -1801,6 +1820,7 @@ function makeRoom(room) {
   clearRoomExitApproaches(built, built.tiles);
   sanitizeBossArenaBottomEntry(built);
   applyMossSpikes(built, built.tiles);
+  applyBellTowerRoute(built, built.tiles, built.rings);
   if (trial && !["dash", "superDash", "wall", "shield", "fire", "doubleJump", "grapple", "time"].includes(trial.ability)) built.rewardPortal = { x: W - 66, y: FLOOR_Y - 72, w: 34, h: 42, rewardRoom: trial.rewardRoom };
   if (room.returnRoom != null && !room.knightHouse && !bossArena) built.returnPortal = {
     x: room.returnPortalX ?? 24,
