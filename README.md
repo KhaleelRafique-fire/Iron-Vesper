@@ -26,6 +26,18 @@ Upload these files to any static web host:
 
 Good targets are itch.io HTML game uploads, GitHub Pages, Netlify, Cloudflare Pages, or a simple web server. No build command is required.
 
+## GitHub Pages Release Flow
+
+Use `master` as the source of truth for ongoing work. The public website is released from the `gh-pages` branch.
+
+When you are ready to publish the current `master` version:
+
+1. Make sure the game works locally.
+2. Commit the finished changes on `master`.
+3. Push `master` to GitHub so the source is backed up.
+4. Update `gh-pages` from `master`.
+5. Push `gh-pages` to publish the live site.
+
 ## Controls
 
 - Move: `A` / `D` or arrow keys
