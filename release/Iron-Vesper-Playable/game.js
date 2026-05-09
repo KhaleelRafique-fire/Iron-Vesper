@@ -1092,64 +1092,38 @@ function applyBellTowerRoute(room, tiles, rings) {
   const key = `${room.x},${room.y}`;
   rings.length = 0;
   clearParkourInterior(tiles);
+  const sideLedge = (left = false, right = false) => {
+    if (left) setTileSpan(tiles, 13, 1, 6);
+    if (right) setTileSpan(tiles, 13, COLS - 7, COLS - 2);
+  };
+  const hookShaft = (ringPoints, sideOptions = {}) => {
+    setTileRect(tiles, 9, 4, 10, GROUND_ROW, "U");
+    setTileRect(tiles, COLS - 11, 4, COLS - 10, GROUND_ROW, "U");
+    placeParkourRings(rings, ringPoints);
+    sideLedge(!!sideOptions.left, !!sideOptions.right);
+  };
   if (key === "1,-1") {
-    rings.push({ x: W / 2, y: 62 });
+    hookShaft([[W / 2, 62]]);
     return;
   }
   if (key === "1,-2") {
-    placePlatforms(tiles, [
-      [15, 18, 22],
-      [12, 12, 16],
-      [9, 22, 26],
-      [6, 16, 20],
-      [4, 20, 24]
-    ]);
-    rings.push({ x: W / 2 + 8, y: 74 });
+    hookShaft([[W / 2, 64]]);
     return;
   }
   if (key === "1,-3") {
-    placePlatforms(tiles, [
-      [15, 4, 9],
-      [12, 14, 18],
-      [9, 22, 27],
-      [6, 15, 20],
-      [4, 20, 24],
-      [14, 31, 35]
-    ]);
-    rings.push({ x: W / 2, y: 58 }, { x: 286, y: 88 });
+    hookShaft([[W / 2, 58], [300, 78], [148, 84]], { left: true, right: true });
     return;
   }
   if (key === "0,-3") {
-    placePlatforms(tiles, [
-      [15, 28, 34],
-      [12, 20, 25],
-      [9, 12, 17],
-      [6, 21, 26],
-      [4, 14, 18]
-    ]);
-    rings.push({ x: 196, y: 66 });
+    hookShaft([[188, 62], [278, 82]], { right: true });
     return;
   }
   if (key === "2,-3") {
-    placePlatforms(tiles, [
-      [15, 4, 9],
-      [12, 13, 18],
-      [9, 23, 28],
-      [6, 14, 19],
-      [4, 22, 27]
-    ]);
-    rings.push({ x: 248, y: 64 });
+    hookShaft([[260, 62], [166, 82]], { left: true });
     return;
   }
   if (key === "2,-2") {
-    placePlatforms(tiles, [
-      [15, 5, 10],
-      [12, 15, 19],
-      [9, 24, 29],
-      [6, 16, 21],
-      [4, 24, 28]
-    ]);
-    rings.push({ x: 238, y: 66 });
+    hookShaft([[246, 62], [158, 86]], { left: true });
   }
 }
 
