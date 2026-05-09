@@ -749,10 +749,10 @@ rooms.push(
     theme: "village",
     village: true,
     npcs: [
-      { name: "Mara", role: "baker", x: 104, line: "Baker Mara: That castle curse has swallowed braver names than yours.", reply: "Knight: Then it must still be hungry. Pack me something dramatic for the victory walk home." },
-      { name: "Tobin", role: "smith", x: 150, line: "Smith Tobin: Steel bends near those walls. The curse cannot be lifted.", reply: "Knight: Good thing I am mostly nerve and bad ideas. The curse can try bending those." },
-      { name: "Pip", role: "child", x: 224, line: "Pip: My gran says the castle eats heroes for breakfast.", reply: "Knight: Then it picked the wrong meal. I come with elbows, steel, and terrible table manners." },
-      { name: "Sister Vale", role: "healer", x: 315, line: "Sister Vale: I have prayed until the candles drowned. The curse remains.", reply: "Knight: Keep one candle dry for me, Sister. I plan to give it something worth lighting." }
+      { name: "Mara", role: "baker", x: 104, line: "Baker Mara: That castle curse has swallowed braver names than yours.", reply: "Knight: I know. But if no one walks in anyway, it keeps winning by default." },
+      { name: "Tobin", role: "smith", x: 150, line: "Smith Tobin: Steel bends near those walls. The curse cannot be lifted.", reply: "Knight: Then I will have to be steadier than steel. I can manage that." },
+      { name: "Pip", role: "child", x: 224, line: "Pip: My gran says the castle eats heroes for breakfast.", reply: "Knight: Your gran is probably right. So I will try not to go in as just another hero." },
+      { name: "Sister Vale", role: "healer", x: 315, line: "Sister Vale: I have prayed until the candles drowned. The curse remains.", reply: "Knight: Then save your prayers for the people here. I will handle the stones." }
     ],
     knightHouseEntrance: true,
     villageDecor: "square"
@@ -764,10 +764,10 @@ rooms.push(
     theme: "village",
     village: true,
     npcs: [
-      { name: "Nessa", role: "trader", x: 88, line: "Trader Nessa: No coin buys a clean road through that curse.", reply: "Knight: Then I will pay in noise, nerve, and a professionally reckless amount of swordwork." },
-      { name: "Brant", role: "guard", x: 178, line: "Old Brant: The knights tried for years. The castle kept the lot.", reply: "Knight: They marched in politely. I am going to kick the door, insult the curse, and make it blink first." },
-      { name: "Jun", role: "minstrel", x: 286, line: "Jun: I only write sad songs about that place now.", reply: "Knight: Tune the lute higher. By nightfall you will need a chorus big enough for my name." },
-      { name: "Edda", role: "elder", x: 366, line: "Edda: Hope is a candle in rain, bright boy. The castle's curse cannot end.", reply: "Knight: Then call me lightning, Edda. Rain gets nervous when I start showing off." }
+      { name: "Nessa", role: "trader", x: 88, line: "Trader Nessa: No coin buys a clean road through that curse.", reply: "Knight: I am not looking for a clean road. Just one that still leads forward." },
+      { name: "Brant", role: "guard", x: 178, line: "Old Brant: The knights tried for years. The castle kept the lot.", reply: "Knight: I will remember them when I pass the gate. Someone should finish what they started." },
+      { name: "Jun", role: "minstrel", x: 286, line: "Jun: I only write sad songs about that place now.", reply: "Knight: Keep the sad ones. Just leave room for one song that turns at the end." },
+      { name: "Edda", role: "elder", x: 366, line: "Edda: Hope is a candle in rain, bright boy. The castle's curse cannot end.", reply: "Knight: Maybe. But a wet candle is still worth shielding." }
     ],
     villageDecor: "market"
   },
@@ -778,9 +778,9 @@ rooms.push(
     theme: "village",
     village: true,
     npcs: [
-      { name: "Rowan", role: "farmer", x: 112, line: "Farmer Rowan: The fields still hear the castle moaning at night.", reply: "Knight: By dusk it will be singing my entrance music. Possibly against its will." },
-      { name: "Ida", role: "elder", x: 214, line: "Ida: I saw three champions leave. None came back with dawn.", reply: "Knight: Dawn and I have an arrangement. I do something impossible, it makes me look magnificent." },
-      { name: "Bell", role: "child", x: 320, line: "Bell: If you lift the curse, can I ring the big castle bell?", reply: "Knight: Twice. First for the castle waking up, second because I will bow and demand applause." }
+      { name: "Rowan", role: "farmer", x: 112, line: "Farmer Rowan: The fields still hear the castle moaning at night.", reply: "Knight: Then I will give it a reason to be quiet." },
+      { name: "Ida", role: "elder", x: 214, line: "Ida: I saw three champions leave. None came back with dawn.", reply: "Knight: I am afraid too, Ida. I am just going anyway." },
+      { name: "Bell", role: "child", x: 320, line: "Bell: If you lift the curse, can I ring the big castle bell?", reply: "Knight: You can ring it first. I will save the best rope for you." }
     ],
     villageDecor: "well"
   },
@@ -792,7 +792,7 @@ rooms.push(
     village: true,
     castleGate: true,
     npcs: [
-      { name: "Warden Orrin", role: "guard", x: 88, line: "Warden Orrin: Past this gate, the castle road stops pretending to be kind.", reply: "Knight: Good. I was getting tired of kind pretending." },
+      { name: "Warden Orrin", role: "guard", x: 88, line: "Warden Orrin: Past this gate, the castle road stops pretending to be kind.", reply: "Knight: Then I will stop pretending this is only courage." },
       { name: "Lio", role: "child", x: 206, line: "Lio: If the castle gets scary, you can still run back here.", reply: "Knight: I will come back when it is quiet enough for you to sleep." },
       { name: "Mara", role: "baker", x: 306, line: "Baker Mara: Take one last warm breath, knight. The stones ahead are all winter.", reply: "Knight: Then I will bring the village a thaw." }
     ],
