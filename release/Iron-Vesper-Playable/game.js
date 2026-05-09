@@ -8230,6 +8230,17 @@ function drawMap() {
     ctx.fillStyle = "#fff1bd";
     ctx.fillRect(x + Math.max(1, active.sw / 2 - 1), y + Math.max(1, active.sh / 2 - 1), 2, 2);
   }
+  const roomNumber = String(player.room);
+  const badgeW = Math.max(28, roomNumber.length * 6 + 18);
+  const badgeX = mapLayout.panelX + mapLayout.panelW - badgeW - 12;
+  const badgeY = mapLayout.panelY + 10;
+  ctx.fillStyle = "rgba(7,9,12,.92)";
+  ctx.fillRect(badgeX, badgeY, badgeW, 16);
+  ctx.strokeStyle = "#ffe7a5";
+  ctx.strokeRect(badgeX + 0.5, badgeY + 0.5, badgeW - 1, 15);
+  ctx.fillStyle = "#f7e7bd";
+  ctx.font = "8px monospace";
+  ctx.fillText(`#${roomNumber}`, badgeX + 7, badgeY + 11);
   ctx.fillStyle = "#f7e7bd";
   ctx.font = "8px monospace";
   ctx.fillText(displayRoomName(currentRoom()), mapLayout.panelX + 13, mapLayout.panelY + mapLayout.panelH - 15);
