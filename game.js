@@ -1083,8 +1083,8 @@ function isMoonHookRouteRoom(room) {
 }
 
 function isBellTowerRouteRoom(room) {
-  if (!room || room.theme !== "tower" || abilityTrials[room.id] || room.rewardAbility) return false;
-  return new Set(["1,-1", "1,-2", "1,-3", "0,-3", "2,-3", "2,-2"]).has(`${room.x},${room.y}`);
+  if (!room || room.theme !== "tower" || room.rewardAbility) return false;
+  return new Set(["1,-1", "1,-2", "1,-3", "1,-4"]).has(`${room.x},${room.y}`);
 }
 
 function applyBellTowerRoute(room, tiles, rings) {
@@ -1092,15 +1092,10 @@ function applyBellTowerRoute(room, tiles, rings) {
   const key = `${room.x},${room.y}`;
   rings.length = 0;
   clearParkourInterior(tiles);
-  const sideLedge = (left = false, right = false) => {
-    if (left) setTileSpan(tiles, 13, 1, 6);
-    if (right) setTileSpan(tiles, 13, COLS - 7, COLS - 2);
-  };
-  const hookShaft = (ringPoints, sideOptions = {}) => {
-    setTileRect(tiles, 9, 4, 10, GROUND_ROW, "U");
-    setTileRect(tiles, COLS - 11, 4, COLS - 10, GROUND_ROW, "U");
+  const hookShaft = ringPoints => {
+    setTileRect(tiles, 7, 3, 8, GROUND_ROW, "U");
+    setTileRect(tiles, COLS - 9, 3, COLS - 8, GROUND_ROW, "U");
     placeParkourRings(rings, ringPoints);
-    sideLedge(!!sideOptions.left, !!sideOptions.right);
   };
   if (key === "1,-1") {
     hookShaft([[W / 2, 62]]);
@@ -1111,20 +1106,10 @@ function applyBellTowerRoute(room, tiles, rings) {
     return;
   }
   if (key === "1,-3") {
-    hookShaft([[W / 2, 58], [300, 78], [148, 84]], { left: true, right: true });
+    hookShaft([[W / 2, 58]]);
     return;
   }
-  if (key === "0,-3") {
-    hookShaft([[188, 62], [278, 82]], { right: true });
-    return;
-  }
-  if (key === "2,-3") {
-    hookShaft([[260, 62], [166, 82]], { left: true });
-    return;
-  }
-  if (key === "2,-2") {
-    hookShaft([[246, 62], [158, 86]], { left: true });
-  }
+  if (key === "1,-4") hookShaft([[W / 2, 70]]);
 }
 
 function applyMoonHookRoute(room, tiles, rings) {
@@ -1588,6 +1573,7 @@ function makeRoom(room) {
   const trial = abilityTrials[room.id];
   const bossArena = isBossArenaRoom(room);
   const bossArenaAbove = roomAboveIsBossArena(room);
+  const bellTowerBossAbove = roomByCoord.get(`${room.x},${room.y - 1}`)?.id === 1;
   const tiles = Array.from({ length: ROWS }, () => Array(COLS).fill("."));
   const solids = [];
   const hazards = [];
@@ -1614,7 +1600,7 @@ function makeRoom(room) {
   const doorStart = Math.floor(COLS / 2) - 2;
   const doorEnd = doorStart + 4;
   if (!bossArena && roomByCoord.has(`${room.x},${room.y + 1}`)) for (let x = doorStart; x < doorEnd; x++) tiles[FLOOR_ROW][x] = ".";
-  if (!bossArenaAbove && roomByCoord.has(`${room.x},${room.y - 1}`)) {
+  if ((!bossArenaAbove || bellTowerBossAbove) && roomByCoord.has(`${room.x},${room.y - 1}`)) {
     for (let x = doorStart; x < doorEnd; x++) {
       tiles[0][x] = ".";
       tiles[1][x] = ".";
@@ -1644,10 +1630,11 @@ function makeRoom(room) {
       for (let x = doorStart - 2; x < doorEnd + 2; x++) tiles[4][x] = "#";
       applyRootImpExitRoute(tiles);
     }
+    applyBellTowerRoute(room, tiles, rings);
     if (roomByCoord.has(`${room.x - 1},${room.y}`)) for (let y = lowerDoorTop; y < FLOOR_ROW; y++) tiles[y][0] = ".";
     if (roomByCoord.has(`${room.x + 1},${room.y}`)) for (let y = lowerDoorTop; y < FLOOR_ROW; y++) tiles[y][COLS - 1] = ".";
     if (!bossArena && roomByCoord.has(`${room.x},${room.y + 1}`)) for (let x = doorStart; x < doorEnd; x++) tiles[FLOOR_ROW][x] = ".";
-    if (!bossArenaAbove && roomByCoord.has(`${room.x},${room.y - 1}`)) {
+    if ((!bossArenaAbove || bellTowerBossAbove) && roomByCoord.has(`${room.x},${room.y - 1}`)) {
       for (let x = doorStart; x < doorEnd; x++) {
         tiles[0][x] = ".";
         tiles[1][x] = ".";
@@ -1673,7 +1660,7 @@ function makeRoom(room) {
     if (roomByCoord.has(`${room.x - 1},${room.y}`)) for (let y = lowerDoorTop; y < FLOOR_ROW; y++) tiles[y][0] = ".";
     if (roomByCoord.has(`${room.x + 1},${room.y}`)) for (let y = lowerDoorTop; y < FLOOR_ROW; y++) tiles[y][COLS - 1] = ".";
     if (!bossArena && roomByCoord.has(`${room.x},${room.y + 1}`)) for (let x = doorStart; x < doorEnd; x++) tiles[FLOOR_ROW][x] = ".";
-    if (!bossArenaAbove && roomByCoord.has(`${room.x},${room.y - 1}`)) {
+    if ((!bossArenaAbove || bellTowerBossAbove) && roomByCoord.has(`${room.x},${room.y - 1}`)) {
       for (let x = doorStart; x < doorEnd; x++) {
         tiles[0][x] = ".";
         tiles[1][x] = ".";
@@ -1854,6 +1841,7 @@ function sanitizeBossArenaSideExits(room) {
 
 function sanitizeBossArenaBottomEntry(room) {
   if (!roomAboveIsBossArena(room)) return;
+  if (roomByCoord.get(`${room.x},${room.y - 1}`)?.id === 1) return;
   const doorStart = Math.floor(COLS / 2) - 2;
   const doorEnd = doorStart + 4;
   for (let x = doorStart; x < doorEnd; x++) {
@@ -2661,7 +2649,7 @@ function enterRoom(dx, dy) {
     bounceFromExit(dx, dy);
     return;
   }
-  if (dy < 0 && isBossArenaRoom(target)) {
+  if (dy < 0 && isBossArenaRoom(target) && target.id !== 1) {
     bounceFromExit(dx, dy);
     playSfx("block");
     say("The guardian's floor will not open from below.");
