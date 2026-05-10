@@ -533,7 +533,7 @@ const abilityArtifacts = {
 const rooms = [
   { name: "Castle Gate", x: 0, y: 0, theme: "castle", checkpointAltar: { x: 92, y: FLOOR_Y - 35, respawnX: 78, respawnY: 146 } },
   { name: "Bell Tower", x: 1, y: -4, theme: "tower", checkpointAltar: { x: 58, y: FLOOR_Y - 35, respawnX: 62, respawnY: 146, style: "tower" } },
-  { name: "Cinder Chapel", x: 4, y: 0, theme: "chapel", checkpointAltar: { x: 82, y: FLOOR_Y - 35, respawnX: 86, respawnY: 146, style: "cinder" } },
+  { name: "Cinder Chapel", x: 4, y: 0, theme: "chapel", checkpointAltar: { x: 82, y: 14 * TILE - 35, respawnX: 86, respawnY: 146, style: "cinder" } },
   { name: "Moonlit Keep", x: 7, y: -1, theme: "keep" },
   { name: "Moss Warrens", x: -1, y: 2, theme: "moss", checkpointAltar: { x: 58, y: FLOOR_Y - 34, respawnX: 62, respawnY: 146, style: "moss" } },
   { name: "Crypt of Oaths", x: 2, y: 4, theme: "crypt" },
@@ -1699,6 +1699,7 @@ function makeRoom(room) {
   }
   if (room.theme === "water" && !trial && !room.rewardAbility) for (let x = 4; x < COLS - 4; x++) tiles[GROUND_ROW][x] = "~";
   if (["crypt", "void"].includes(room.theme) && !trial && !room.rewardAbility) for (let x = 5; x < COLS - 5; x += 4) tiles[Math.max(6, FLOOR_ROW - 5)][x] = "G";
+  if (room.id === 2) setTileSpan(tiles, 14, 5, 12);
   if ([2, 8, 20, 24].includes(room.id)) {
     const sx = Math.min(20, COLS - 3);
     for (let y = Math.max(4, FLOOR_ROW - 5); y < FLOOR_ROW; y++) tiles[y][sx] = "S";
