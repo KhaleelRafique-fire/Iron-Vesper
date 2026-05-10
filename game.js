@@ -931,6 +931,23 @@ function applyMossSpikes(room, tiles) {
   }
 }
 
+function addCinderFireballColumns(room, hazards) {
+  if (room.theme !== "chapel" || room.checkpointAltar || abilityTrials[room.id] || room.rewardAbility) return;
+  const seed = parkourSeed(room);
+  const count = 1 + (seed % 2);
+  const points = seed % 2
+    ? [{ x: 176, y: 82, length: 34, phase: 0 }, { x: 306, y: 94, length: 28, phase: 1.7 }]
+    : [{ x: 236, y: 78, length: 38, phase: 0.9 }];
+  for (const point of points.slice(0, count)) hazards.push({
+    kind: "cinderColumn",
+    x: point.x,
+    y: point.y,
+    length: point.length,
+    phase: point.phase + room.id * 0.37,
+    radius: 9
+  });
+}
+
 function isBossArenaRoom(room) {
   return !!room && (!!abilityTrials[room.id] || room.id === FINAL_BOSS_ROOM_ID);
 }
@@ -1844,6 +1861,7 @@ function makeRoom(room) {
     entryY: room.returnEntryY
   };
   rebuildCollision(built);
+  addCinderFireballColumns(built, built.hazards);
   return built;
 }
 
@@ -2384,6 +2402,7 @@ function loadGame() {
       applyMossSpikes(room, room.tiles);
       applyBellTowerRoute(room, room.tiles, room.rings);
       rebuildCollision(room);
+      addCinderFireballColumns(room, room.hazards);
       room.items.forEach((item, i) => item.taken = !!state.items?.[i]);
       room.enemies.forEach((enemy, i) => enemy.hp = Number.isFinite(state.enemies?.[i]) ? state.enemies[i] : enemy.hp);
     }
@@ -2497,6 +2516,15 @@ function bossBarrierSolids(room) {
   if (openTop) barriers.push({ x: W / 2 - 44, y: 0, w: 88, h: 20, unclimbable: true });
   if (openBottom) barriers.push({ x: W / 2 - 44, y: H - 20, w: 88, h: 20, unclimbable: true });
   return barriers;
+}
+
+function cinderColumnHitbox(hazard) {
+  const swing = Math.sin(frame / 38 + hazard.phase) * 24;
+  const bob = Math.cos(frame / 31 + hazard.phase) * 4;
+  const x = hazard.x + swing;
+  const y = hazard.y + hazard.length + bob;
+  const r = hazard.radius || 9;
+  return { x: x - r, y: y - r, w: r * 2, h: r * 2, cx: x, cy: y, r };
 }
 
 function has(a) {
@@ -5622,13 +5650,15 @@ function update() {
     damagePlayer(1, p.x, "", { bypassHurt: !!p.bypassHurt });
   }
   const pogo = pogoBox();
-  for (const h of room.hazards) if (rects(player, h)) {
-    if (pogo && hitboxIntersects(pogo, h) && player.vy >= -1) {
-      pogoBounce(h.x + h.w / 2, has("shield") ? "#bfe9ff" : "#fff1bd");
+  for (const h of room.hazards) {
+    const hitbox = h.kind === "cinderColumn" ? cinderColumnHitbox(h) : h;
+    if (!rects(player, hitbox)) continue;
+    if (pogo && hitboxIntersects(pogo, hitbox) && player.vy >= -1) {
+      pogoBounce((hitbox.cx ?? hitbox.x + hitbox.w / 2), has("shield") ? "#bfe9ff" : "#fff1bd");
     } else {
       const spikeRoom = player.room;
-      const damaged = damagePlayer(1, h.x, "", { bypassShield: true });
-      if (damaged && player.hp > 0 && player.room === spikeRoom) resetToRoomStart("The spikes force you back to the room start.");
+      const damaged = damagePlayer(1, hitbox.x, "", { bypassShield: true });
+      if (damaged && player.hp > 0 && player.room === spikeRoom && h.kind !== "cinderColumn") resetToRoomStart("The spikes force you back to the room start.");
     }
   }
   for (const w of room.water) if (rects(player, w) && !has("swim") && frame % 50 === 0) damagePlayer(1, w.x);
@@ -7954,6 +7984,29 @@ function drawProjectile(p) {
   pixelRect(p.x + (p.vx > 0 ? p.w - 1 : 0), p.y + 2, 1, 1, "#ffffff");
 }
 
+function drawCinderColumnHazards(room) {
+  for (const h of room.hazards) {
+    if (h.kind !== "cinderColumn") continue;
+    const hitbox = cinderColumnHitbox(h);
+    const anchorX = Math.round(h.x + cameraX);
+    const anchorY = Math.round(h.y + cameraY);
+    const ballX = Math.round(hitbox.cx + cameraX);
+    const ballY = Math.round(hitbox.cy + cameraY);
+    ctx.strokeStyle = "rgba(243,204,103,.5)";
+    ctx.beginPath();
+    ctx.moveTo(anchorX, anchorY);
+    ctx.lineTo(ballX, ballY);
+    ctx.stroke();
+    pixelRect(h.x - 5, h.y - 3, 10, 5, "#7b4939");
+    pixelRect(h.x - 3, h.y - 1, 6, 2, "#f3cc67");
+    const flare = frame % 8 < 4 ? 1 : 0;
+    pixelRect(hitbox.x - 3, hitbox.y + 5, hitbox.w + 6, 8, "rgba(198,66,60,.5)");
+    pixelRect(hitbox.x + 1, hitbox.y + 1 - flare, hitbox.w - 2, hitbox.h - 2, "#ff7a3d");
+    pixelRect(hitbox.x + 5, hitbox.y + 4 - flare, Math.max(5, hitbox.w - 10), Math.max(5, hitbox.h - 8), "#fff1bd");
+    pixelRect(hitbox.x + hitbox.w - 4, hitbox.y + 5, 3, 3, "#ffffff");
+  }
+}
+
 function drawPortal(portal, theme, open, label) {
   const p = palette[theme] || palette.castle;
   const x = portal.x;
@@ -8473,6 +8526,7 @@ function draw() {
   drawBossBarriers(room);
   for (const it of room.items) drawItem(it);
   for (const npc of room.npcs || []) drawNpc(npc);
+  drawCinderColumnHazards(room);
   for (const p of projectiles) drawProjectile(p);
   for (const e of room.enemies) drawEnemy(e);
   for (const p of particles) pixelRect(p.x, p.y, 2, 2, p.color);
