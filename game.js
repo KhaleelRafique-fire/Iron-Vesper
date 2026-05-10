@@ -931,14 +931,36 @@ function applyMossSpikes(room, tiles) {
   }
 }
 
-function addCinderFireballColumns(room, hazards) {
+function cinderFireballColumnPoints(room) {
   if (room.theme !== "chapel" || room.checkpointAltar || abilityTrials[room.id] || room.rewardAbility) return;
   const seed = parkourSeed(room);
   const count = 1 + (seed % 2);
   const points = seed % 2
     ? [{ x: 176, y: 82, length: 34, phase: 0 }, { x: 306, y: 94, length: 28, phase: 1.7 }]
     : [{ x: 236, y: 78, length: 38, phase: 0.9 }];
-  for (const point of points.slice(0, count)) hazards.push({
+  return points.slice(0, count);
+}
+
+function clearCinderFireballColumnLanes(room, tiles) {
+  const points = cinderFireballColumnPoints(room);
+  if (!points) return;
+  for (const point of points) {
+    const x1 = Math.floor((point.x - 38) / TILE);
+    const x2 = Math.ceil((point.x + 38) / TILE);
+    const y1 = Math.floor((point.y - 6) / TILE);
+    const y2 = Math.ceil((point.y + point.length + 14) / TILE);
+    for (let y = Math.max(2, y1); y <= Math.min(FLOOR_ROW - 1, y2); y++) {
+      for (let x = Math.max(1, x1); x <= Math.min(COLS - 2, x2); x++) {
+        tiles[y][x] = ".";
+      }
+    }
+  }
+}
+
+function addCinderFireballColumns(room, hazards) {
+  const points = cinderFireballColumnPoints(room);
+  if (!points) return;
+  for (const point of points) hazards.push({
     kind: "cinderColumn",
     x: point.x,
     y: point.y,
@@ -1850,6 +1872,7 @@ function makeRoom(room) {
   sanitizeBossArenaBottomEntry(built);
   applyMossSpikes(built, built.tiles);
   applyBellTowerRoute(built, built.tiles, built.rings);
+  clearCinderFireballColumnLanes(built, built.tiles);
   if (trial && !["dash", "superDash", "wall", "shield", "fire", "doubleJump", "grapple", "time"].includes(trial.ability)) built.rewardPortal = { x: W - 66, y: FLOOR_Y - 72, w: 34, h: 42, rewardRoom: trial.rewardRoom };
   if (room.returnRoom != null && !room.knightHouse && !bossArena) built.returnPortal = {
     x: room.returnPortalX ?? 24,
@@ -2401,6 +2424,7 @@ function loadGame() {
       sanitizeBossArenaBottomEntry(room);
       applyMossSpikes(room, room.tiles);
       applyBellTowerRoute(room, room.tiles, room.rings);
+      clearCinderFireballColumnLanes(room, room.tiles);
       rebuildCollision(room);
       addCinderFireballColumns(room, room.hazards);
       room.items.forEach((item, i) => item.taken = !!state.items?.[i]);
