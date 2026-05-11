@@ -33,6 +33,8 @@ const TIME_ACTIVE_MAX = 600;
 const TIME_COOLDOWN_MAX = 420;
 const TIME_COST = 3.4;
 const WORLD_RENDER_ZOOM = 1.0;
+const CINDER_COLUMN_SWING = 42;
+const CINDER_COLUMN_CLEARANCE = CINDER_COLUMN_SWING + 16;
 const BACKGROUND_RENDER_SCALE = 0.86;
 const keys = new Set();
 const pressed = new Set();
@@ -945,8 +947,8 @@ function clearCinderFireballColumnLanes(room, tiles) {
   const points = cinderFireballColumnPoints(room);
   if (!points) return;
   for (const point of points) {
-    const x1 = Math.floor((point.x - 38) / TILE);
-    const x2 = Math.ceil((point.x + 38) / TILE);
+    const x1 = Math.floor((point.x - CINDER_COLUMN_CLEARANCE) / TILE);
+    const x2 = Math.ceil((point.x + CINDER_COLUMN_CLEARANCE) / TILE);
     const y1 = Math.floor((point.y - 6) / TILE);
     const y2 = Math.ceil((point.y + point.length + 14) / TILE);
     for (let y = Math.max(2, y1); y <= Math.min(FLOOR_ROW - 1, y2); y++) {
@@ -2543,7 +2545,7 @@ function bossBarrierSolids(room) {
 }
 
 function cinderColumnHitbox(hazard) {
-  const swing = Math.sin(frame / 38 + hazard.phase) * 24;
+  const swing = Math.sin(frame / 38 + hazard.phase) * CINDER_COLUMN_SWING;
   const bob = Math.cos(frame / 31 + hazard.phase) * 4;
   const x = hazard.x + swing;
   const y = hazard.y + hazard.length + bob;
@@ -5682,7 +5684,7 @@ function update() {
     } else {
       const spikeRoom = player.room;
       const damaged = damagePlayer(1, hitbox.x, "", { bypassShield: true });
-      if (damaged && player.hp > 0 && player.room === spikeRoom && h.kind !== "cinderColumn") resetToRoomStart("The spikes force you back to the room start.");
+      if (damaged && player.hp > 0 && player.room === spikeRoom) resetToRoomStart(h.kind === "cinderColumn" ? "The cinder fire knocks you back to the room start." : "The spikes force you back to the room start.");
     }
   }
   for (const w of room.water) if (rects(player, w) && !has("swim") && frame % 50 === 0) damagePlayer(1, w.x);
