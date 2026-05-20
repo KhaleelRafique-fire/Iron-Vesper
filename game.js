@@ -2799,6 +2799,12 @@ function enterRoom(dx, dy) {
   if (dx < 0) player.x = W - player.w - 22;
   if (dy > 0) player.y = 18;
   if (dy < 0) player.y = 174;
+  if (target.id === 18 && dy > 0) {
+    player.x = 46;
+    player.y = FLOOR_Y - player.h;
+    player.vx = 0;
+    player.vy = 0;
+  }
   setRoomStart(player.x, player.y);
   clearRoomEffects();
   setMusicTheme(room.theme);
