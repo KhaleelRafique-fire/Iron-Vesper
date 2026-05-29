@@ -552,7 +552,7 @@ const rooms = [
   { name: "Lunar Battlement", x: 7, y: -3, theme: "keep" },
   { name: "Overgrown Sluice", x: -2, y: 2, theme: "moss" },
   { name: "Moss Rootworks", x: -3, y: 4, theme: "moss" },
-  { name: "Oath Antechamber", x: 2, y: 3, theme: "crypt" },
+  { name: "Oath Antechamber", x: 2, y: 3, theme: "crypt", checkpointAltar: { x: 82, y: FLOOR_Y - 35, respawnX: 86, respawnY: 146, style: "crypt" } },
   { name: "Reliquary Depths", x: 2, y: 3, theme: "water", removed: true },
   { name: "Furnace Belly", x: 6, y: 5, theme: "forge" },
   { name: "Buried Cloister", x: 0, y: 5, theme: "catacomb" },
@@ -1185,43 +1185,25 @@ function applyBellTowerRoute(room, tiles, rings) {
 
 function applyMoonHookRoute(room, tiles, rings) {
   if (!isMoonHookRouteRoom(room)) return;
-  const key = `${room.x},${room.y}`;
   rings.length = 0;
   clearParkourInterior(tiles);
   const doorStart = Math.floor(COLS / 2) - 2;
   const doorEnd = doorStart + 4;
   const hasLeft = roomByCoord.has(`${room.x - 1},${room.y}`);
+  const hasRight = roomByCoord.has(`${room.x + 1},${room.y}`);
+  const hasTop = roomByCoord.has(`${room.x},${room.y - 1}`);
   const hasBottom = roomByCoord.has(`${room.x},${room.y + 1}`);
-  const gateX = key === "8,-3" ? 13 : key === "8,-2" ? 17 : key === "8,-1" ? 20 : 23;
-  if (hasLeft) {
-    setTileRect(tiles, 6, 6, 7, GROUND_ROW, "U");
-    setTileSpan(tiles, 14, 2, 5);
-    setTileSpan(tiles, 11, 2, 5);
-    setTileSpan(tiles, 8, 3, 5);
-    setTileSpan(tiles, 7, 4, 5);
+  if (hasTop) {
+    placePlatforms(tiles, [
+      [14, doorStart - 2, doorEnd + 1],
+      [11, doorStart - 2, doorEnd + 1],
+      [8, doorStart - 1, doorEnd],
+      [5, doorStart - 1, doorEnd]
+    ]);
+    rings.push({ x: W / 2, y: 76 }, { x: W / 2, y: 48 });
   }
-  if (hasBottom) {
-    setTileRect(tiles, doorStart - 4, 7, doorStart - 3, GROUND_ROW, "U");
-    setTileRect(tiles, doorEnd + 2, 7, doorEnd + 3, GROUND_ROW, "U");
-    setTileSpan(tiles, 14, doorStart - 2, doorStart + 1);
-    setTileSpan(tiles, 11, doorStart + 2, doorEnd + 1);
-    setTileSpan(tiles, 8, doorEnd, doorEnd + 4);
-  }
-  if (!hasLeft && !hasBottom) setTileRect(tiles, gateX, 5, gateX + 1, GROUND_ROW, "U");
-  placePlatforms(tiles, [
-    [15, 2, 8],
-    [12, 9, 15],
-    [9, 15, 21],
-    [6, gateX - 5, gateX - 1],
-    [6, gateX + 2, gateX + 7],
-    [13, gateX + 9, COLS - 4]
-  ]);
-  if (key === "8,-2" || key === "8,-3") {
-    setTileSpan(tiles, 10, gateX + 8, gateX + 13);
-  }
-  if (hasLeft) rings.push({ x: 128, y: 76 });
-  if (hasBottom) rings.push({ x: W / 2, y: 70 });
-  if (!hasLeft && !hasBottom) rings.push({ x: (gateX + 7) * TILE, y: 78 }, { x: (gateX - 3) * TILE, y: 72 });
+  if (hasLeft || hasRight) rings.push({ x: 128, y: 82 }, { x: W - 128, y: 82 });
+  if (hasBottom && !hasTop) rings.push({ x: W / 2, y: 88 });
 }
 
 function applyParkourLayout(room, tiles, rings) {
@@ -2948,13 +2930,14 @@ function updateCheckpointAltar(room) {
   shake = Math.max(shake, 5);
   const moss = altar.style === "moss" || room.theme === "moss";
   const tower = altar.style === "tower" || room.theme === "tower";
+  const crypt = altar.style === "crypt" || room.theme === "crypt";
   const bone = altar.style === "bone" || room.theme === "bone";
   const cinder = altar.style === "cinder" || room.theme === "chapel";
   const sundial = altar.style === "sundial";
   const moon = altar.style === "moon";
-  addParticles(altar.x + altar.w / 2, altar.y + 12, moss ? "#d7b167" : tower ? "#fff1bd" : bone ? "#f1d7a4" : cinder ? "#ff7a3d" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#fff1bd", 36);
-  addParticles(altar.x + altar.w / 2, altar.y + altar.h - 6, moss ? "#6ea35f" : tower ? "#d7be7a" : bone ? "#8f806d" : cinder ? "#f3cc67" : sundial ? "#a596ff" : moon ? "#f7e7bd" : "#d7be7a", 24);
-  say(moss ? "Root altar awakened. You will rise here after death." : tower ? "Bell altar rung. You will rise here after death." : bone ? "Ossuary altar kindled. You will rise here after death." : cinder ? "Cinder altar kindled. You will rise here after death." : sundial ? "Sundial altar aligned. You will rise here after death." : moon ? "Moon altar sworn. You will rise here after death." : "Checkpoint altar lit. You will rise here after death.");
+  addParticles(altar.x + altar.w / 2, altar.y + 12, moss ? "#d7b167" : tower ? "#fff1bd" : crypt ? "#90a5ad" : bone ? "#f1d7a4" : cinder ? "#ff7a3d" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#fff1bd", 36);
+  addParticles(altar.x + altar.w / 2, altar.y + altar.h - 6, moss ? "#6ea35f" : tower ? "#d7be7a" : crypt ? "#cfd8dc" : bone ? "#8f806d" : cinder ? "#f3cc67" : sundial ? "#a596ff" : moon ? "#f7e7bd" : "#d7be7a", 24);
+  say(moss ? "Root altar awakened. You will rise here after death." : tower ? "Bell altar rung. You will rise here after death." : crypt ? "Oath altar sealed. You will rise here after death." : bone ? "Ossuary altar kindled. You will rise here after death." : cinder ? "Cinder altar kindled. You will rise here after death." : sundial ? "Sundial altar aligned. You will rise here after death." : moon ? "Moon altar sworn. You will rise here after death." : "Checkpoint altar lit. You will rise here after death.");
   saveGame();
   return true;
 }
@@ -8100,24 +8083,25 @@ function drawCheckpointAltar(room) {
   const glow = active ? Math.sin(frame / 11) * 2 : 0;
   const moss = altar.style === "moss" || room.theme === "moss";
   const tower = altar.style === "tower" || room.theme === "tower";
+  const crypt = altar.style === "crypt" || room.theme === "crypt";
   const bone = altar.style === "bone" || room.theme === "bone";
   const cinder = altar.style === "cinder" || room.theme === "chapel";
   const sundial = altar.style === "sundial";
   const moon = altar.style === "moon";
-  pixelRect(x - 7, y + altar.h - 2, altar.w + 14, 4, active ? moss ? "rgba(215,177,103,.42)" : tower ? "rgba(215,190,122,.42)" : bone ? "rgba(241,215,164,.42)" : cinder ? "rgba(225,107,67,.45)" : sundial ? "rgba(240,166,66,.44)" : moon ? "rgba(159,208,208,.42)" : "rgba(255,241,189,.42)" : "rgba(0,0,0,.42)");
+  pixelRect(x - 7, y + altar.h - 2, altar.w + 14, 4, active ? moss ? "rgba(215,177,103,.42)" : tower ? "rgba(215,190,122,.42)" : crypt ? "rgba(144,165,173,.42)" : bone ? "rgba(241,215,164,.42)" : cinder ? "rgba(225,107,67,.45)" : sundial ? "rgba(240,166,66,.44)" : moon ? "rgba(159,208,208,.42)" : "rgba(255,241,189,.42)" : "rgba(0,0,0,.42)");
   if (active) {
-    pixelRect(x - 8, y + 4 + glow, altar.w + 16, altar.h - 4, moss ? "rgba(110,163,95,.16)" : tower ? "rgba(215,190,122,.15)" : bone ? "rgba(241,215,164,.14)" : cinder ? "rgba(225,107,67,.18)" : sundial ? "rgba(165,150,255,.16)" : moon ? "rgba(159,208,208,.17)" : "rgba(255,231,165,.13)");
-    pixelRect(x + altar.w / 2 - 1, y - 6, 2, altar.h + 7, moss ? "rgba(215,177,103,.38)" : tower ? "rgba(255,241,189,.4)" : bone ? "rgba(241,215,164,.38)" : cinder ? "rgba(255,122,61,.42)" : sundial ? "rgba(240,166,66,.4)" : moon ? "rgba(247,231,189,.38)" : "rgba(255,241,189,.38)");
-    pixelRect(x + 1, y + 15, altar.w - 2, 1, moss ? "rgba(215,177,103,.35)" : tower ? "rgba(215,190,122,.35)" : bone ? "rgba(241,215,164,.34)" : cinder ? "rgba(243,204,103,.35)" : sundial ? "rgba(165,150,255,.34)" : moon ? "rgba(159,208,208,.36)" : "rgba(255,241,189,.35)");
+    pixelRect(x - 8, y + 4 + glow, altar.w + 16, altar.h - 4, moss ? "rgba(110,163,95,.16)" : tower ? "rgba(215,190,122,.15)" : crypt ? "rgba(144,165,173,.16)" : bone ? "rgba(241,215,164,.14)" : cinder ? "rgba(225,107,67,.18)" : sundial ? "rgba(165,150,255,.16)" : moon ? "rgba(159,208,208,.17)" : "rgba(255,231,165,.13)");
+    pixelRect(x + altar.w / 2 - 1, y - 6, 2, altar.h + 7, moss ? "rgba(215,177,103,.38)" : tower ? "rgba(255,241,189,.4)" : crypt ? "rgba(207,216,220,.38)" : bone ? "rgba(241,215,164,.38)" : cinder ? "rgba(255,122,61,.42)" : sundial ? "rgba(240,166,66,.4)" : moon ? "rgba(247,231,189,.38)" : "rgba(255,241,189,.38)");
+    pixelRect(x + 1, y + 15, altar.w - 2, 1, moss ? "rgba(215,177,103,.35)" : tower ? "rgba(215,190,122,.35)" : crypt ? "rgba(144,165,173,.35)" : bone ? "rgba(241,215,164,.34)" : cinder ? "rgba(243,204,103,.35)" : sundial ? "rgba(165,150,255,.34)" : moon ? "rgba(159,208,208,.36)" : "rgba(255,241,189,.35)");
   }
-  pixelRect(x + 3, y + 12, altar.w - 6, altar.h - 12, moss ? "#2c4630" : tower ? "#2b3545" : bone ? "#413934" : cinder ? "#4f2730" : sundial ? "#563118" : moon ? "#27384b" : "#2b3545");
-  pixelRect(x + 1, y + 19, altar.w - 2, 7, moss ? "#6b8c53" : tower ? "#69728a" : bone ? "#8f806d" : cinder ? "#7b4939" : sundial ? "#9b5030" : moon ? "#5b6f86" : "#54606a");
-  pixelRect(x, y + altar.h - 10, altar.w, 10, moss ? "#1d3922" : tower ? "#121923" : bone ? "#141313" : cinder ? "#171016" : sundial ? "#17130e" : moon ? "#10161d" : "#33414a");
-  pixelRect(x + 4, y + altar.h - 8, altar.w - 8, 2, moss ? "#d7b167" : tower ? "#d7be7a" : bone ? "#f1d7a4" : cinder ? "#e16b43" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#b48850");
-  pixelRect(x + 6, y + 7, altar.w - 12, 8, active ? moss ? "#d7b167" : tower ? "#fff1bd" : bone ? "#f1d7a4" : cinder ? "#ff7a3d" : sundial ? "#f0a642" : moon ? "#f7e7bd" : "#fff1bd" : moss ? "#385d4c" : tower ? "#5b4a35" : bone ? "#413934" : cinder ? "#4f2730" : sundial ? "#563118" : moon ? "#27384b" : "#7d5c35");
-  pixelRect(x + 8, y + 9, altar.w - 16, 4, active ? moss ? "#fff1bd" : tower ? "#d7be7a" : bone ? "#fff1bd" : cinder ? "#fff1bd" : sundial ? "#a596ff" : moon ? "#9fd0d0" : "#f3cc67" : moss ? "#26362d" : tower ? "#2b3545" : bone ? "#5d5148" : cinder ? "#171016" : sundial ? "#17130e" : moon ? "#10161d" : "#3b3030");
-  pixelRect(x + altar.w / 2 - 2, y + 2, 4, 18, active ? moss ? "#6ea35f" : tower ? "#d7be7a" : bone ? "#f1d7a4" : cinder ? "#f3cc67" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#d7be7a" : moss ? "#385d4c" : bone ? "#8f806d" : cinder ? "#7b4939" : sundial ? "#6d6255" : moon ? "#5b6f86" : "#69728a");
-  pixelRect(x + altar.w / 2 - 6, y + 1, 12, 3, active ? moss ? "#d7b167" : tower ? "#fff1bd" : bone ? "#fff1bd" : cinder ? "#f3cc67" : sundial ? "#fff1bd" : moon ? "#f7e7bd" : "#fff1bd" : moss ? "#6b8c53" : bone ? "#8f806d" : cinder ? "#7b4939" : sundial ? "#9b5030" : moon ? "#5b6f86" : "#54606a");
+  pixelRect(x + 3, y + 12, altar.w - 6, altar.h - 12, moss ? "#2c4630" : tower ? "#2b3545" : crypt ? "#303239" : bone ? "#413934" : cinder ? "#4f2730" : sundial ? "#563118" : moon ? "#27384b" : "#2b3545");
+  pixelRect(x + 1, y + 19, altar.w - 2, 7, moss ? "#6b8c53" : tower ? "#69728a" : crypt ? "#666b74" : bone ? "#8f806d" : cinder ? "#7b4939" : sundial ? "#9b5030" : moon ? "#5b6f86" : "#54606a");
+  pixelRect(x, y + altar.h - 10, altar.w, 10, moss ? "#1d3922" : tower ? "#121923" : crypt ? "#111215" : bone ? "#141313" : cinder ? "#171016" : sundial ? "#17130e" : moon ? "#10161d" : "#33414a");
+  pixelRect(x + 4, y + altar.h - 8, altar.w - 8, 2, moss ? "#d7b167" : tower ? "#d7be7a" : crypt ? "#90a5ad" : bone ? "#f1d7a4" : cinder ? "#e16b43" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#b48850");
+  pixelRect(x + 6, y + 7, altar.w - 12, 8, active ? moss ? "#d7b167" : tower ? "#fff1bd" : crypt ? "#cfd8dc" : bone ? "#f1d7a4" : cinder ? "#ff7a3d" : sundial ? "#f0a642" : moon ? "#f7e7bd" : "#fff1bd" : moss ? "#385d4c" : tower ? "#5b4a35" : crypt ? "#303239" : bone ? "#413934" : cinder ? "#4f2730" : sundial ? "#563118" : moon ? "#27384b" : "#7d5c35");
+  pixelRect(x + 8, y + 9, altar.w - 16, 4, active ? moss ? "#fff1bd" : tower ? "#d7be7a" : crypt ? "#90a5ad" : bone ? "#fff1bd" : cinder ? "#fff1bd" : sundial ? "#a596ff" : moon ? "#9fd0d0" : "#f3cc67" : moss ? "#26362d" : tower ? "#2b3545" : crypt ? "#111215" : bone ? "#5d5148" : cinder ? "#171016" : sundial ? "#17130e" : moon ? "#10161d" : "#3b3030");
+  pixelRect(x + altar.w / 2 - 2, y + 2, 4, 18, active ? moss ? "#6ea35f" : tower ? "#d7be7a" : crypt ? "#cfd8dc" : bone ? "#f1d7a4" : cinder ? "#f3cc67" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#d7be7a" : moss ? "#385d4c" : crypt ? "#666b74" : bone ? "#8f806d" : cinder ? "#7b4939" : sundial ? "#6d6255" : moon ? "#5b6f86" : "#69728a");
+  pixelRect(x + altar.w / 2 - 6, y + 1, 12, 3, active ? moss ? "#d7b167" : tower ? "#fff1bd" : crypt ? "#cfd8dc" : bone ? "#fff1bd" : cinder ? "#f3cc67" : sundial ? "#fff1bd" : moon ? "#f7e7bd" : "#fff1bd" : moss ? "#6b8c53" : crypt ? "#666b74" : bone ? "#8f806d" : cinder ? "#7b4939" : sundial ? "#9b5030" : moon ? "#5b6f86" : "#54606a");
   if (moss) {
     const crawl = frame % 28 < 14 ? 1 : 0;
     pixelRect(x - 4, y + 14, 5, 3, "#26362d");
@@ -8137,6 +8121,21 @@ function drawCheckpointAltar(room) {
       pixelRect(x + altar.w + 1 + ring, y + 8, 5, 2, "rgba(255,241,189,.55)");
       pixelRect(x - 4 - ring, y + 15, 4, 1, "rgba(215,190,122,.45)");
       pixelRect(x + altar.w + ring, y + 15, 4, 1, "rgba(215,190,122,.45)");
+    }
+  } else if (crypt) {
+    const hush = frame % 36 < 18 ? 1 : 0;
+    pixelRect(x - 2, y + 9, 5, 19, "#666b74");
+    pixelRect(x + altar.w - 3, y + 9, 5, 19, "#666b74");
+    pixelRect(x + 4, y + 6, altar.w - 8, 4, active ? "#cfd8dc" : "#666b74");
+    pixelRect(x + 7, y + 11, altar.w - 14, 12, "#111215");
+    pixelRect(x + 9, y + 14, altar.w - 18, 2, active ? "#90a5ad" : "#303239");
+    pixelRect(x + 9, y + 19, altar.w - 18, 2, active ? "#cfd8dc" : "#303239");
+    pixelRect(x + altar.w / 2 - 2, y + 13, 4, 9, active ? "#cfd8dc" : "#666b74");
+    pixelRect(x + altar.w / 2 - 5, y + 17, 10, 2, active ? "#90a5ad" : "#303239");
+    if (active) {
+      pixelRect(x - 7 - hush, y + 12, 5, 1, "rgba(207,216,220,.54)");
+      pixelRect(x + altar.w + 2 + hush, y + 18, 5, 1, "rgba(144,165,173,.5)");
+      pixelRect(x + 5, y - 4 - hush, altar.w - 10, 1, "rgba(207,216,220,.46)");
     }
   } else if (bone) {
     const pulse = frame % 32 < 16 ? 1 : 0;
@@ -8200,12 +8199,12 @@ function drawCheckpointAltar(room) {
     }
   }
   if (active) {
-    pixelRect(x + altar.w / 2 - 7, y - 9 - flame, 14, 12, moss ? "rgba(110,163,95,.45)" : tower ? "rgba(215,190,122,.45)" : bone ? "rgba(241,215,164,.38)" : cinder ? "rgba(225,107,67,.5)" : sundial ? "rgba(240,166,66,.45)" : moon ? "rgba(159,208,208,.45)" : "rgba(255,122,61,.45)");
-    pixelRect(x + altar.w / 2 - 4, y - 15 - flame, 8, 13, moss ? "#6ea35f" : tower ? "#d7be7a" : bone ? "#f1d7a4" : cinder ? "#ff7a3d" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#ff7a3d");
+    pixelRect(x + altar.w / 2 - 7, y - 9 - flame, 14, 12, moss ? "rgba(110,163,95,.45)" : tower ? "rgba(215,190,122,.45)" : crypt ? "rgba(144,165,173,.45)" : bone ? "rgba(241,215,164,.38)" : cinder ? "rgba(225,107,67,.5)" : sundial ? "rgba(240,166,66,.45)" : moon ? "rgba(159,208,208,.45)" : "rgba(255,122,61,.45)");
+    pixelRect(x + altar.w / 2 - 4, y - 15 - flame, 8, 13, moss ? "#6ea35f" : tower ? "#d7be7a" : crypt ? "#90a5ad" : bone ? "#f1d7a4" : cinder ? "#ff7a3d" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#ff7a3d");
     pixelRect(x + altar.w / 2 - 2, y - 19 - flame, 4, 11, moss ? "#fff1bd" : "#fff1bd");
   } else {
-    pixelRect(x + altar.w / 2 - 3, y - 4, 6, 5, moss ? "#26362d" : tower ? "#2b3545" : bone ? "#413934" : cinder ? "#171016" : sundial ? "#17130e" : moon ? "#10161d" : "#3b3030");
-    if (near && frame % 18 < 9) pixelRect(x + altar.w / 2 - 1, y - 6, 2, 4, moss ? "#6ea35f" : bone ? "#f1d7a4" : cinder ? "#ff7a3d" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#d7be7a");
+    pixelRect(x + altar.w / 2 - 3, y - 4, 6, 5, moss ? "#26362d" : tower ? "#2b3545" : crypt ? "#111215" : bone ? "#413934" : cinder ? "#171016" : sundial ? "#17130e" : moon ? "#10161d" : "#3b3030");
+    if (near && frame % 18 < 9) pixelRect(x + altar.w / 2 - 1, y - 6, 2, 4, moss ? "#6ea35f" : crypt ? "#90a5ad" : bone ? "#f1d7a4" : cinder ? "#ff7a3d" : sundial ? "#f0a642" : moon ? "#9fd0d0" : "#d7be7a");
   }
   if (near) drawTinyText("F", x + altar.w / 2 - 3, y - 22, "#ffe7a5");
 }
